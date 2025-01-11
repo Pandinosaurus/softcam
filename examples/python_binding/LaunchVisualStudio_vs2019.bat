@@ -9,7 +9,7 @@ pushd %~dp0
 
 call _GetPythonPath.bat
 
-start python_binding.sln
+start python_binding_vs2019.sln
 
 popd
 endlocal

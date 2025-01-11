@@ -4,7 +4,7 @@ on: [push]
 
 env:
   # Path to the solution file relative to the root of the project.
-  SOLUTION_FILE_PATH: .
+  SOLUTION_FILE_PATH: ./softcam.sln
 
 jobs:
   build:
@@ -16,10 +16,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -46,3 +46,20 @@ jobs:
     - name: Build Example softcam_installer
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{matrix.configuration}} /p:Platform=${{matrix.platform}} ./examples/softcam_installer/softcam_installer.sln
+
+    - name: Build Example python_binding
+      working-directory: ./examples/python_binding
+      shell: cmd
+      if: ${{ matrix.configuration == 'Release' && matrix.platform == 'x64' }}
+      run: |
+        echo yes | call DownloadPybind11.bat
+        call _GetPythonPath.bat
+        msbuild /m /p:Configuration=${{matrix.configuration}} /p:Platform=${{matrix.platform}} ./python_binding.sln
+
+    - name: Test Python Binding
+      working-directory: ./examples/python_binding
+      shell: cmd
+      if: ${{ matrix.configuration == 'Release' && matrix.platform == 'x64' }}
+      run: |
+        pip install pytest numpy
+        pytest

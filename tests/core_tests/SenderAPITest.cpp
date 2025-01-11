@@ -9,7 +9,7 @@
 #include <softcamcore/Misc.h>
 
 
-namespace {
+namespace SenderAPITest {
 namespace sc = softcam;
 namespace sender = softcam::sender;
 
@@ -346,4 +346,39 @@ TEST(SenderWaitForConnection, InvalidArgs)
     EXPECT_EQ( ret, false );
 }
 
-} //namespace
+TEST(SenderIsConnected, ReturnsFalseIfNotConnectedEver)
+{
+    auto handle = sender::CreateCamera(320, 240);
+
+    bool ret = sender::IsConnected(handle);
+
+    EXPECT_EQ( ret, false );
+    sender::DeleteCamera(handle);
+}
+
+TEST(SenderIsConnected, ReturnsTrueIfAlreadyConnected)
+{
+    auto handle = sender::CreateCamera(320, 240);
+
+    auto fb = sc::FrameBuffer::open();
+    ASSERT_TRUE( fb );
+
+    bool ret = sender::IsConnected(handle);
+
+    EXPECT_EQ( ret, true );
+    sender::DeleteCamera(handle);
+}
+
+TEST(SenderIsConnected, InvalidArgs)
+{
+    bool ret = sender::IsConnected(nullptr);
+    EXPECT_EQ( ret, false );
+
+    auto handle = sender::CreateCamera(320, 240);
+    sender::DeleteCamera(handle);
+
+    ret = sender::IsConnected(handle);
+    EXPECT_EQ( ret, false );
+}
+
+} //namespace SenderAPITest
